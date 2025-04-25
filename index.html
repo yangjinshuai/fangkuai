@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tetris Game</title>
+    <title>Tic Tac Toe</title>
     <style>
         body {
             display: flex;
@@ -12,181 +12,132 @@
             align-items: center;
             height: 100vh;
             margin: 0;
-            background-color: #f0f0f0;
+            background-color: #f4f4f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         }
 
-        #game-board {
+        #board {
             display: grid;
-            grid-template-columns: repeat(10, 20px);
-            grid-template-rows: repeat(20, 20px);
-            gap: 1px;
+            grid-template-columns: repeat(3, 100px);
+            grid-template-rows: repeat(3, 100px);
+            gap: 5px;
             background-color: #333;
         }
 
         .cell {
-            width: 20px;
-            height: 20px;
-            background-color: #000;
+            width: 100px;
+            height: 100px;
+            background-color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 60px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
         }
 
-        .block {
-            background-color: blue;
+        .cell:hover {
+            background-color: #e0e0e0;
+        }
+
+        #status {
+            margin-top: 20px;
+            font-size: 24px;
+            text-align: center;
+        }
+
+        #reset {
+            margin-top: 10px;
+            padding: 10px 20px;
+            font-size: 18px;
+            cursor: pointer;
+            border: none;
+            background-color: #007BFF;
+            color: white;
+            border-radius: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        #reset:hover {
+            background-color: #0056b3;
         }
     </style>
 </head>
 
 <body>
-    <div id="game-board"></div>
+    <div id="board"></div>
+    <div id="status"></div>
+    <button id="reset">Reset Game</button>
     <script>
-        const gameBoard = document.getElementById('game-board');
-        const rows = 20;
-        const cols = 10;
-        const board = [];
-
-        for (let i = 0; i < rows; i++) {
-            board[i] = [];
-            for (let j = 0; j < cols; j++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                gameBoard.appendChild(cell);
-                board[i][j] = cell;
-            }
-        }
-
-        const shapes = [
-            [[1, 1, 1, 1]],
-            [[1, 1], [1, 1]],
-            [[1, 1, 0], [0, 1, 1]],
-            [[0, 1, 1], [1, 1, 0]],
-            [[1, 1, 1], [0, 1, 0]],
-            [[1, 1, 1], [1, 0, 0]],
-            [[1, 1, 1], [0, 0, 1]]
+        const board = document.getElementById('board');
+        const status = document.getElementById('status');
+        const resetButton = document.getElementById('reset');
+        let currentPlayer = 'X';
+        let gameBoard = ['', '', '', '', '', '', '', '', ''];
+        const winningCombinations = [
+            [0, 1, 2], [3, 4, 5], [6, 7, 8],
+            [0, 3, 6], [1, 4, 7], [2, 5, 8],
+            [0, 4, 8], [2, 4, 6]
         ];
 
-        let currentShape;
-        let currentX;
-        let currentY;
-
-        function newShape() {
-            const randomIndex = Math.floor(Math.random() * shapes.length);
-            currentShape = shapes[randomIndex];
-            currentX = Math.floor(cols / 2) - Math.floor(currentShape[0].length / 2);
-            currentY = 0;
+        function createBoard() {
+            for (let i = 0; i < 9; i++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                cell.dataset.index = i;
+                cell.addEventListener('click', handleCellClick);
+                board.appendChild(cell);
+            }
         }
 
-        function drawShape() {
-            for (let i = 0; i < currentShape.length; i++) {
-                for (let j = 0; j < currentShape[i].length; j++) {
-                    if (currentShape[i][j] === 1) {
-                        board[currentY + i][currentX + j].classList.add('block');
-                    }
+        function handleCellClick(event) {
+            const index = parseInt(event.target.dataset.index);
+            if (gameBoard[index] === '' &&!isGameOver()) {
+                gameBoard[index] = currentPlayer;
+                event.target.textContent = currentPlayer;
+                if (checkWin(currentPlayer)) {
+                    status.textContent = `${currentPlayer} wins!`;
+                } else if (isBoardFull()) {
+                    status.textContent = 'It\'s a draw!';
+                } else {
+                    currentPlayer = currentPlayer === 'X'? 'O' : 'X';
+                    status.textContent = `${currentPlayer}'s turn`;
                 }
             }
         }
 
-        function clearShape() {
-            for (let i = 0; i < currentShape.length; i++) {
-                for (let j = 0; j < currentShape[i].length; j++) {
-                    if (currentShape[i][j] === 1) {
-                        board[currentY + i][currentX + j].classList.remove('block');
-                    }
+        function checkWin(player) {
+            for (const combination of winningCombinations) {
+                const [a, b, c] = combination;
+                if (gameBoard[a] === player && gameBoard[b] === player && gameBoard[c] === player) {
+                    return true;
                 }
             }
+            return false;
         }
 
-        function canMove(dx, dy) {
-            for (let i = 0; i < currentShape.length; i++) {
-                for (let j = 0; j < currentShape[i].length; j++) {
-                    if (currentShape[i][j] === 1) {
-                        const newX = currentX + j + dx;
-                        const newY = currentY + i + dy;
-                        if (newX < 0 || newX >= cols || newY >= rows || (newY >= 0 && board[newY][newX].classList.contains('block'))) {
-                            return false;
-                        }
-                    }
-                }
-            }
-            return true;
+        function isBoardFull() {
+            return gameBoard.every(cell => cell!== '');
         }
 
-        function moveDown() {
-            if (canMove(0, 1)) {
-                clearShape();
-                currentY++;
-                drawShape();
-            } else {
-                freezeShape();
-                newShape();
-            }
+        function isGameOver() {
+            return checkWin('X') || checkWin('O') || isBoardFull();
         }
 
-        function freezeShape() {
-            for (let i = 0; i < currentShape.length; i++) {
-                for (let j = 0; j < currentShape[i].length; j++) {
-                    if (currentShape[i][j] === 1) {
-                        board[currentY + i][currentX + j].classList.add('block');
-                    }
-                }
-            }
-            checkLines();
+        function resetGame() {
+            currentPlayer = 'X';
+            gameBoard = ['', '', '', '', '', '', '', '', ''];
+            status.textContent = `${currentPlayer}'s turn`;
+            const cells = document.querySelectorAll('.cell');
+            cells.forEach(cell => {
+                cell.textContent = '';
+            });
         }
 
-        function checkLines() {
-            for (let i = rows - 1; i >= 0; i--) {
-                let isFull = true;
-                for (let j = 0; j < cols; j++) {
-                    if (!board[i][j].classList.contains('block')) {
-                        isFull = false;
-                        break;
-                    }
-                }
-                if (isFull) {
-                    for (let k = i; k > 0; k--) {
-                        for (let j = 0; j < cols; j++) {
-                            board[k][j].classList = board[k - 1][j].classList;
-                        }
-                    }
-                    i++;
-                }
-            }
-        }
-
-        function moveLeft() {
-            if (canMove(-1, 0)) {
-                clearShape();
-                currentX--;
-                drawShape();
-            }
-        }
-
-        function moveRight() {
-            if (canMove(1, 0)) {
-                clearShape();
-                currentX++;
-                drawShape();
-            }
-        }
-
-        document.addEventListener('keydown', function (event) {
-            switch (event.key) {
-                case 'ArrowLeft':
-                    moveLeft();
-                    break;
-                case 'ArrowRight':
-                    moveRight();
-                    break;
-                case 'ArrowDown':
-                    moveDown();
-                    break;
-            }
-        });
-
-        newShape();
-        drawShape();
-
-        setInterval(moveDown, 500);
+        createBoard();
+        status.textContent = `${currentPlayer}'s turn`;
+        resetButton.addEventListener('click', resetGame);
     </script>
 </body>
 
-</html>
-    
+</html>    
