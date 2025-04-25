@@ -1,10 +1,192 @@
-<html>
-  <head>
-    <title>小游戏</title>
-    <meta charset='utf=8'>
-  </head>
-  <body>
-    <h1>我的小游戏</h1>
-    <img src="https___yangjinshuai.github.io_fangkuai_.png">
-  </body>
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tetris Game</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+
+        #game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 20px);
+            grid-template-rows: repeat(20, 20px);
+            gap: 1px;
+            background-color: #333;
+        }
+
+        .cell {
+            width: 20px;
+            height: 20px;
+            background-color: #000;
+        }
+
+        .block {
+            background-color: blue;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="game-board"></div>
+    <script>
+        const gameBoard = document.getElementById('game-board');
+        const rows = 20;
+        const cols = 10;
+        const board = [];
+
+        for (let i = 0; i < rows; i++) {
+            board[i] = [];
+            for (let j = 0; j < cols; j++) {
+                const cell = document.createElement('div');
+                cell.classList.add('cell');
+                gameBoard.appendChild(cell);
+                board[i][j] = cell;
+            }
+        }
+
+        const shapes = [
+            [[1, 1, 1, 1]],
+            [[1, 1], [1, 1]],
+            [[1, 1, 0], [0, 1, 1]],
+            [[0, 1, 1], [1, 1, 0]],
+            [[1, 1, 1], [0, 1, 0]],
+            [[1, 1, 1], [1, 0, 0]],
+            [[1, 1, 1], [0, 0, 1]]
+        ];
+
+        let currentShape;
+        let currentX;
+        let currentY;
+
+        function newShape() {
+            const randomIndex = Math.floor(Math.random() * shapes.length);
+            currentShape = shapes[randomIndex];
+            currentX = Math.floor(cols / 2) - Math.floor(currentShape[0].length / 2);
+            currentY = 0;
+        }
+
+        function drawShape() {
+            for (let i = 0; i < currentShape.length; i++) {
+                for (let j = 0; j < currentShape[i].length; j++) {
+                    if (currentShape[i][j] === 1) {
+                        board[currentY + i][currentX + j].classList.add('block');
+                    }
+                }
+            }
+        }
+
+        function clearShape() {
+            for (let i = 0; i < currentShape.length; i++) {
+                for (let j = 0; j < currentShape[i].length; j++) {
+                    if (currentShape[i][j] === 1) {
+                        board[currentY + i][currentX + j].classList.remove('block');
+                    }
+                }
+            }
+        }
+
+        function canMove(dx, dy) {
+            for (let i = 0; i < currentShape.length; i++) {
+                for (let j = 0; j < currentShape[i].length; j++) {
+                    if (currentShape[i][j] === 1) {
+                        const newX = currentX + j + dx;
+                        const newY = currentY + i + dy;
+                        if (newX < 0 || newX >= cols || newY >= rows || (newY >= 0 && board[newY][newX].classList.contains('block'))) {
+                            return false;
+                        }
+                    }
+                }
+            }
+            return true;
+        }
+
+        function moveDown() {
+            if (canMove(0, 1)) {
+                clearShape();
+                currentY++;
+                drawShape();
+            } else {
+                freezeShape();
+                newShape();
+            }
+        }
+
+        function freezeShape() {
+            for (let i = 0; i < currentShape.length; i++) {
+                for (let j = 0; j < currentShape[i].length; j++) {
+                    if (currentShape[i][j] === 1) {
+                        board[currentY + i][currentX + j].classList.add('block');
+                    }
+                }
+            }
+            checkLines();
+        }
+
+        function checkLines() {
+            for (let i = rows - 1; i >= 0; i--) {
+                let isFull = true;
+                for (let j = 0; j < cols; j++) {
+                    if (!board[i][j].classList.contains('block')) {
+                        isFull = false;
+                        break;
+                    }
+                }
+                if (isFull) {
+                    for (let k = i; k > 0; k--) {
+                        for (let j = 0; j < cols; j++) {
+                            board[k][j].classList = board[k - 1][j].classList;
+                        }
+                    }
+                    i++;
+                }
+            }
+        }
+
+        function moveLeft() {
+            if (canMove(-1, 0)) {
+                clearShape();
+                currentX--;
+                drawShape();
+            }
+        }
+
+        function moveRight() {
+            if (canMove(1, 0)) {
+                clearShape();
+                currentX++;
+                drawShape();
+            }
+        }
+
+        document.addEventListener('keydown', function (event) {
+            switch (event.key) {
+                case 'ArrowLeft':
+                    moveLeft();
+                    break;
+                case 'ArrowRight':
+                    moveRight();
+                    break;
+                case 'ArrowDown':
+                    moveDown();
+                    break;
+            }
+        });
+
+        newShape();
+        drawShape();
+
+        setInterval(moveDown, 500);
+    </script>
+</body>
+
 </html>
+    
