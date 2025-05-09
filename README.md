@@ -15,6 +15,7 @@
 ➡️ **[点此在线游玩 (Play Online Here)](https://yangjinshuai.github.io/fangkuai/)** ⬅️
 
 或者扫码在线游玩：
+![image](https://github.com/user-attachments/assets/4752638c-7bd1-4123-92dd-55fb5ae316e3)
 
 
 
