@@ -1,143 +1,675 @@
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="zh-CN">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tic Tac Toe</title>
+    <title>经典小游戏合集</title>
     <style>
         body {
+            font-family: Arial, sans-serif;
             display: flex;
-            justify-content: center;
+            flex-direction: column;
             align-items: center;
-            height: 100vh;
             margin: 0;
-            background-color: #f4f4f9;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            padding: 20px;
+            background-color: #f0f0f0;
+            min-height: 100vh;
+            box-sizing: border-box;
         }
 
-        #board {
+        .tabs {
+            margin-bottom: 20px;
+            display: flex;
+            border-bottom: 2px solid #ccc;
+        }
+
+        .tab-button {
+            padding: 10px 20px;
+            cursor: pointer;
+            border: 1px solid #ccc;
+            border-bottom: none;
+            background-color: #e9e9e9;
+            margin-right: 5px;
+            border-radius: 5px 5px 0 0;
+        }
+
+        .tab-button.active {
+            background-color: #fff;
+            border-bottom: 2px solid #fff; /* 覆盖底部边框，使其看起来与内容区连接 */
+            position: relative;
+            top: 2px; /* 轻微上移以覆盖容器的边框 */
+        }
+
+        .game-content {
+            display: none; /* 默认隐藏所有游戏内容 */
+            padding: 20px;
+            border: 1px solid #ccc;
+            background-color: #fff;
+            border-radius: 0 5px 5px 5px;
+            width: auto; /* 根据内容调整 */
+            min-width: 400px; /* 最小宽度 */
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+
+        .game-content.active {
+            display: block; /* 显示活动的游戏内容 */
+        }
+
+        h2 {
+            margin-top: 0;
+            color: #333;
+        }
+        p {
+            margin-bottom: 10px;
+            color: #555;
+        }
+        button {
+            padding: 8px 15px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .score-display {
+            font-size: 1.2em;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        /* Snake Game Specific Styles */
+        #snakeCanvas {
+            border: 1px solid #333;
+            background-color: #f0f8ff; /* AliceBlue for better contrast */
+        }
+
+        /* 2048 Game Specific Styles */
+        #game2048Board {
             display: grid;
-            grid-template-columns: repeat(3, 100px);
-            grid-template-rows: repeat(3, 100px);
-            gap: 5px;
-            background-color: #333;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            width: 320px; /* 4 * 70 + 4 * 10 (gap) */
+            height: 320px;
+            gap: 10px;
+            background-color: #bbada0;
+            padding: 10px;
+            border-radius: 6px;
+            margin: 0 auto; /* Center the board */
         }
-
-        .cell {
-            width: 100px;
-            height: 100px;
-            background-color: white;
+        .tile {
+            width: 70px;
+            height: 70px;
+            background-color: #cdc1b4;
+            border-radius: 3px;
             display: flex;
             justify-content: center;
             align-items: center;
-            font-size: 60px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-        }
-
-        .cell:hover {
-            background-color: #e0e0e0;
-        }
-
-        #status {
-            margin-top: 20px;
             font-size: 24px;
+            font-weight: bold;
+            color: #776e65;
+        }
+        /* Tile colors - can be expanded */
+        .tile[data-value="2"] { background-color: #eee4da; color: #776e65; }
+        .tile[data-value="4"] { background-color: #ede0c8; color: #776e65; }
+        .tile[data-value="8"] { background-color: #f2b179; color: white; }
+        .tile[data-value="16"] { background-color: #f59563; color: white; }
+        .tile[data-value="32"] { background-color: #f67c5f; color: white; }
+        .tile[data-value="64"] { background-color: #f65e3b; color: white; }
+        .tile[data-value="128"] { background-color: #edcf72; color: white; font-size: 20px;}
+        .tile[data-value="256"] { background-color: #edcc61; color: white; font-size: 20px;}
+        .tile[data-value="512"] { background-color: #edc850; color: white; font-size: 20px;}
+        .tile[data-value="1024"] { background-color: #edc53f; color: white; font-size: 18px;}
+        .tile[data-value="2048"] { background-color: #edc22e; color: white; font-size: 18px;}
+
+        #message2048 {
             text-align: center;
+            margin-top: 15px;
+            font-size: 1.1em;
+            min-height: 20px;
         }
 
-        #reset {
-            margin-top: 10px;
-            padding: 10px 20px;
-            font-size: 18px;
-            cursor: pointer;
-            border: none;
-            background-color: #007BFF;
-            color: white;
-            border-radius: 5px;
-            transition: background-color 0.3s ease;
-        }
-
-        #reset:hover {
-            background-color: #0056b3;
+        /* Breakout Game Specific Styles */
+        #breakoutCanvas {
+            border: 1px solid #333;
+            background-color: #e0ffff; /* LightCyan */
         }
     </style>
 </head>
-
 <body>
-    <div id="board"></div>
-    <div id="status"></div>
-    <button id="reset">Reset Game</button>
-    <script>
-        const board = document.getElementById('board');
-        const status = document.getElementById('status');
-        const resetButton = document.getElementById('reset');
-        let currentPlayer = 'X';
-        let gameBoard = ['', '', '', '', '', '', '', '', ''];
-        const winningCombinations = [
-            [0, 1, 2], [3, 4, 5], [6, 7, 8],
-            [0, 3, 6], [1, 4, 7], [2, 5, 8],
-            [0, 4, 8], [2, 4, 6]
-        ];
 
-        function createBoard() {
-            for (let i = 0; i < 9; i++) {
-                const cell = document.createElement('div');
-                cell.classList.add('cell');
-                cell.dataset.index = i;
-                cell.addEventListener('click', handleCellClick);
-                board.appendChild(cell);
+    <h1>经典小游戏合集</h1>
+
+    <div class="tabs">
+        <button class="tab-button active" onclick="openGame(event, 'snake')">贪吃蛇</button>
+        <button class="tab-button" onclick="openGame(event, 'game2048')">2048</button>
+        <button class="tab-button" onclick="openGame(event, 'breakout')">打砖块</button>
+    </div>
+
+    <!-- 贪吃蛇游戏 -->
+    <div id="snake" class="game-content active">
+        <h2>贪吃蛇</h2>
+        <p>使用方向键 (↑, ↓, ←, →) 控制蛇的移动。</p>
+        <div class="score-display">分数: <span id="snakeScore">0</span></div>
+        <canvas id="snakeCanvas" width="400" height="400"></canvas>
+        <button onclick="snakeGame.start()">开始游戏</button>
+    </div>
+
+    <!-- 2048游戏 -->
+    <div id="game2048" class="game-content">
+        <h2>2048</h2>
+        <p>使用方向键 (↑, ↓, ←, →) 移动方块，合并相同的数字，目标是得到2048！</p>
+        <div class="score-display">分数: <span id="score2048">0</span></div>
+        <div id="game2048Board"></div>
+        <div id="message2048"></div>
+        <button onclick="game2048.start()">开始新游戏</button>
+    </div>
+
+    <!-- 打砖块游戏 -->
+    <div id="breakout" class="game-content">
+        <h2>打砖块</h2>
+        <p>使用左右方向键 (←, →) 或鼠标移动挡板。不要让球掉下去！</p>
+        <div class="score-display">分数: <span id="breakoutScore">0</span> | 生命: <span id="breakoutLives">3</span></div>
+        <canvas id="breakoutCanvas" width="480" height="320"></canvas>
+        <button onclick="breakoutGame.start()">开始游戏</button>
+    </div>
+
+<script>
+    // --- 通用标签页逻辑 ---
+    function openGame(evt, gameName) {
+        var i, gamecontent, tabbuttons;
+        gamecontent = document.getElementsByClassName("game-content");
+        for (i = 0; i < gamecontent.length; i++) {
+            gamecontent[i].style.display = "none";
+            gamecontent[i].classList.remove("active");
+        }
+        tabbuttons = document.getElementsByClassName("tab-button");
+        for (i = 0; i < tabbuttons.length; i++) {
+            tabbuttons[i].classList.remove("active");
+        }
+        document.getElementById(gameName).style.display = "block";
+        document.getElementById(gameName).classList.add("active");
+        evt.currentTarget.classList.add("active");
+
+        // 停止其他游戏可能正在运行的循环
+        if (gameName !== 'snake' && snakeGame.gameLoop) clearInterval(snakeGame.gameLoop);
+        // 2048不需要清理循环，它是事件驱动的
+        if (gameName !== 'breakout' && breakoutGame.animationFrameId) cancelAnimationFrame(breakoutGame.animationFrameId);
+    }
+
+    // --- 贪吃蛇游戏逻辑 ---
+    const snakeGame = {
+        canvas: null,
+        ctx: null,
+        gridSize: 20,
+        tileCount: 0,
+        snake: [],
+        food: {x: 0, y: 0},
+        dx: 0,
+        dy: 0,
+        score: 0,
+        gameLoop: null,
+        gameSpeed: 130, // ms
+
+        init: function() {
+            this.canvas = document.getElementById('snakeCanvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.tileCount = this.canvas.width / this.gridSize;
+            document.addEventListener('keydown', this.handleKeyPress.bind(this));
+        },
+
+        start: function() {
+            if (this.gameLoop) clearInterval(this.gameLoop);
+            this.snake = [{x: Math.floor(this.tileCount / 2), y: Math.floor(this.tileCount / 2)}];
+            this.dx = 1; // Start moving right
+            this.dy = 0;
+            this.score = 0;
+            document.getElementById('snakeScore').textContent = this.score;
+            this.spawnFood();
+            this.gameLoop = setInterval(this.update.bind(this), this.gameSpeed);
+        },
+
+        spawnFood: function() {
+            this.food.x = Math.floor(Math.random() * this.tileCount);
+            this.food.y = Math.floor(Math.random() * this.tileCount);
+            // Ensure food doesn't spawn on snake
+            for (let segment of this.snake) {
+                if (segment.x === this.food.x && segment.y === this.food.y) {
+                    this.spawnFood(); // Try again
+                    return;
+                }
+            }
+        },
+
+        update: function() {
+            const head = {x: this.snake[0].x + this.dx, y: this.snake[0].y + this.dy};
+
+            // Check for wall collision
+            if (head.x < 0 || head.x >= this.tileCount || head.y < 0 || head.y >= this.tileCount) {
+                this.gameOver();
+                return;
+            }
+
+            // Check for self collision
+            for (let i = 1; i < this.snake.length; i++) {
+                if (head.x === this.snake[i].x && head.y === this.snake[i].y) {
+                    this.gameOver();
+                    return;
+                }
+            }
+
+            this.snake.unshift(head); // Add new head
+
+            // Check for food collision
+            if (head.x === this.food.x && head.y === this.food.y) {
+                this.score++;
+                document.getElementById('snakeScore').textContent = this.score;
+                this.spawnFood();
+            } else {
+                this.snake.pop(); // Remove tail if no food eaten
+            }
+            this.draw();
+        },
+
+        draw: function() {
+            // Clear canvas
+            this.ctx.fillStyle = '#f0f8ff';
+            this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+
+            // Draw snake
+            this.ctx.fillStyle = 'green';
+            for (let segment of this.snake) {
+                this.ctx.fillRect(segment.x * this.gridSize, segment.y * this.gridSize, this.gridSize -1, this.gridSize -1);
+            }
+
+            // Draw food
+            this.ctx.fillStyle = 'red';
+            this.ctx.fillRect(this.food.x * this.gridSize, this.food.y * this.gridSize, this.gridSize-1, this.gridSize-1);
+        },
+
+        handleKeyPress: function(e) {
+            if (document.getElementById('snake').classList.contains('active')) {
+                 // Prevent snake from reversing onto itself
+                if (e.key === 'ArrowUp' && this.dy === 0) { this.dx = 0; this.dy = -1; }
+                else if (e.key === 'ArrowDown' && this.dy === 0) { this.dx = 0; this.dy = 1; }
+                else if (e.key === 'ArrowLeft' && this.dx === 0) { this.dx = -1; this.dy = 0; }
+                else if (e.key === 'ArrowRight' && this.dx === 0) { this.dx = 1; this.dy = 0; }
+            }
+        },
+        gameOver: function() {
+            clearInterval(this.gameLoop);
+            alert(`游戏结束! 你的分数是: ${this.score}`);
+        }
+    };
+
+    // --- 2048 游戏逻辑 ---
+    const game2048 = {
+        board: [],
+        score: 0,
+        gridSize: 4,
+        boardElement: null,
+        scoreElement: null,
+        messageElement: null,
+        gameOver: false,
+
+        init: function() {
+            this.boardElement = document.getElementById('game2048Board');
+            this.scoreElement = document.getElementById('score2048');
+            this.messageElement = document.getElementById('message2048');
+            document.addEventListener('keydown', this.handleKeyPress.bind(this));
+            this.start();
+        },
+
+        start: function() {
+            this.board = Array(this.gridSize).fill(null).map(() => Array(this.gridSize).fill(0));
+            this.score = 0;
+            this.gameOver = false;
+            this.updateScore();
+            this.messageElement.textContent = '';
+            this.addRandomTile();
+            this.addRandomTile();
+            this.renderBoard();
+        },
+
+        addRandomTile: function() {
+            let emptyTiles = [];
+            for (let r = 0; r < this.gridSize; r++) {
+                for (let c = 0; c < this.gridSize; c++) {
+                    if (this.board[r][c] === 0) {
+                        emptyTiles.push({r, c});
+                    }
+                }
+            }
+            if (emptyTiles.length > 0) {
+                const {r, c} = emptyTiles[Math.floor(Math.random() * emptyTiles.length)];
+                this.board[r][c] = Math.random() < 0.9 ? 2 : 4;
+            }
+        },
+
+        renderBoard: function() {
+            this.boardElement.innerHTML = '';
+            for (let r = 0; r < this.gridSize; r++) {
+                for (let c = 0; c < this.gridSize; c++) {
+                    const tile = document.createElement('div');
+                    tile.classList.add('tile');
+                    if (this.board[r][c] !== 0) {
+                        tile.textContent = this.board[r][c];
+                        tile.dataset.value = this.board[r][c];
+                    }
+                    this.boardElement.appendChild(tile);
+                }
+            }
+        },
+
+        move: function(direction) {
+            if (this.gameOver) return;
+            let boardChanged = false;
+            let originalBoard = JSON.parse(JSON.stringify(this.board)); // Deep copy
+
+            if (direction === 'left' || direction === 'right') {
+                for (let r = 0; r < this.gridSize; r++) {
+                    let row = this.board[r];
+                    let newRow = this.transformRow(row, direction === 'right');
+                    if (!this.arrayEquals(this.board[r], newRow)) boardChanged = true;
+                    this.board[r] = newRow;
+                }
+            } else if (direction === 'up' || direction === 'down') {
+                for (let c = 0; c < this.gridSize; c++) {
+                    let col = [];
+                    for (let r = 0; r < this.gridSize; r++) col.push(this.board[r][c]);
+                    let newCol = this.transformRow(col, direction === 'down');
+                    for (let r = 0; r < this.gridSize; r++) {
+                        if (this.board[r][c] !== newCol[r]) boardChanged = true;
+                        this.board[r][c] = newCol[r];
+                    }
+                }
+            }
+
+            if (boardChanged) {
+                this.addRandomTile();
+                this.renderBoard();
+                this.updateScore(); // Score is updated within transformRow
+                if (this.checkGameOver()) {
+                    this.gameOver = true;
+                    this.messageElement.textContent = '游戏结束!';
+                }
+            }
+        },
+
+        transformRow: function(row, reverse) {
+            if (reverse) row.reverse();
+            // Slide
+            let newRow = row.filter(val => val !== 0);
+            // Merge
+            for (let i = 0; i < newRow.length - 1; i++) {
+                if (newRow[i] === newRow[i+1]) {
+                    newRow[i] *= 2;
+                    this.score += newRow[i];
+                    newRow.splice(i+1, 1);
+                }
+            }
+            // Fill with zeros
+            while (newRow.length < this.gridSize) {
+                newRow.push(0);
+            }
+            if (reverse) newRow.reverse();
+            return newRow;
+        },
+        
+        arrayEquals: function(a, b) {
+            return Array.isArray(a) && Array.isArray(b) && a.length === b.length && a.every((val, index) => val === b[index]);
+        },
+
+        updateScore: function() {
+            this.scoreElement.textContent = this.score;
+        },
+
+        checkGameOver: function() {
+            // Check for empty cells
+            for (let r = 0; r < this.gridSize; r++) {
+                for (let c = 0; c < this.gridSize; c++) {
+                    if (this.board[r][c] === 0) return false; // Game not over
+                }
+            }
+            // Check for possible merges
+            for (let r = 0; r < this.gridSize; r++) {
+                for (let c = 0; c < this.gridSize; c++) {
+                    if (c < this.gridSize - 1 && this.board[r][c] === this.board[r][c+1]) return false;
+                    if (r < this.gridSize - 1 && this.board[r][c] === this.board[r+1][c]) return false;
+                }
+            }
+            return true; // Game over
+        },
+
+        handleKeyPress: function(e) {
+            if (document.getElementById('game2048').classList.contains('active')) {
+                e.preventDefault(); // Prevent page scrolling
+                if (this.gameOver) return;
+                if (e.key === 'ArrowUp') this.move('up');
+                else if (e.key === 'ArrowDown') this.move('down');
+                else if (e.key === 'ArrowLeft') this.move('left');
+                else if (e.key === 'ArrowRight') this.move('right');
             }
         }
+    };
 
-        function handleCellClick(event) {
-            const index = parseInt(event.target.dataset.index);
-            if (gameBoard[index] === '' &&!isGameOver()) {
-                gameBoard[index] = currentPlayer;
-                event.target.textContent = currentPlayer;
-                if (checkWin(currentPlayer)) {
-                    status.textContent = `${currentPlayer} wins!`;
-                } else if (isBoardFull()) {
-                    status.textContent = 'It\'s a draw!';
+    // --- 打砖块游戏逻辑 ---
+    const breakoutGame = {
+        canvas: null,
+        ctx: null,
+        ballRadius: 10,
+        x: 0, y: 0, // Ball position
+        dx: 2, dy: -2, // Ball speed
+        paddleHeight: 10,
+        paddleWidth: 75,
+        paddleX: 0,
+        rightPressed: false,
+        leftPressed: false,
+        brickRowCount: 3,
+        brickColumnCount: 7,
+        brickWidth: 55,
+        brickHeight: 20,
+        brickPadding: 10,
+        brickOffsetTop: 30,
+        brickOffsetLeft: 30,
+        bricks: [],
+        score: 0,
+        lives: 3,
+        animationFrameId: null,
+        
+        init: function() {
+            this.canvas = document.getElementById('breakoutCanvas');
+            this.ctx = this.canvas.getContext('2d');
+            this.paddleX = (this.canvas.width - this.paddleWidth) / 2;
+            this.x = this.canvas.width / 2;
+            this.y = this.canvas.height - 30;
+
+            document.addEventListener("keydown", this.keyDownHandler.bind(this), false);
+            document.addEventListener("keyup", this.keyUpHandler.bind(this), false);
+            document.addEventListener("mousemove", this.mouseMoveHandler.bind(this), false);
+            this.resetBricks();
+        },
+
+        start: function() {
+            if (this.animationFrameId) cancelAnimationFrame(this.animationFrameId);
+            this.score = 0;
+            this.lives = 3;
+            this.x = this.canvas.width / 2;
+            this.y = this.canvas.height - 30 - this.ballRadius;
+            this.dx = 2;
+            this.dy = -2; // Ball starts moving up
+            this.paddleX = (this.canvas.width - this.paddleWidth) / 2;
+            this.resetBricks();
+            this.updateScoreAndLives();
+            this.drawLoop();
+        },
+        
+        resetBricks: function() {
+            this.bricks = [];
+            for(let c=0; c < this.brickColumnCount; c++) {
+                this.bricks[c] = [];
+                for(let r=0; r < this.brickRowCount; r++) {
+                    this.bricks[c][r] = { x: 0, y: 0, status: 1 };
+                }
+            }
+        },
+
+        keyDownHandler: function(e) {
+             if (document.getElementById('breakout').classList.contains('active')) {
+                if(e.key == "Right" || e.key == "ArrowRight") {
+                    this.rightPressed = true;
+                }
+                else if(e.key == "Left" || e.key == "ArrowLeft") {
+                    this.leftPressed = true;
+                }
+            }
+        },
+        keyUpHandler: function(e) {
+            if (document.getElementById('breakout').classList.contains('active')) {
+                if(e.key == "Right" || e.key == "ArrowRight") {
+                    this.rightPressed = false;
+                }
+                else if(e.key == "Left" || e.key == "ArrowLeft") {
+                    this.leftPressed = false;
+                }
+            }
+        },
+        mouseMoveHandler: function(e) {
+             if (document.getElementById('breakout').classList.contains('active')) {
+                let relativeX = e.clientX - this.canvas.getBoundingClientRect().left;
+                if(relativeX > 0 && relativeX < this.canvas.width) {
+                    this.paddleX = relativeX - this.paddleWidth/2;
+                    if (this.paddleX < 0) this.paddleX = 0;
+                    if (this.paddleX + this.paddleWidth > this.canvas.width) this.paddleX = this.canvas.width - this.paddleWidth;
+                }
+            }
+        },
+
+        collisionDetection: function() {
+            for(let c=0; c < this.brickColumnCount; c++) {
+                for(let r=0; r < this.brickRowCount; r++) {
+                    let b = this.bricks[c][r];
+                    if(b.status == 1) {
+                        if(this.x > b.x && this.x < b.x + this.brickWidth && this.y > b.y && this.y < b.y + this.brickHeight) {
+                            this.dy = -this.dy;
+                            b.status = 0;
+                            this.score++;
+                            this.updateScoreAndLives();
+                            if(this.score == this.brickRowCount * this.brickColumnCount) {
+                                alert("恭喜你，赢了!");
+                                // document.location.reload(); // Or call start()
+                                this.start(); // Restart
+                            }
+                        }
+                    }
+                }
+            }
+        },
+
+        drawBall: function() {
+            this.ctx.beginPath();
+            this.ctx.arc(this.x, this.y, this.ballRadius, 0, Math.PI*2);
+            this.ctx.fillStyle = "#0095DD";
+            this.ctx.fill();
+            this.ctx.closePath();
+        },
+        drawPaddle: function() {
+            this.ctx.beginPath();
+            this.ctx.rect(this.paddleX, this.canvas.height - this.paddleHeight, this.paddleWidth, this.paddleHeight);
+            this.ctx.fillStyle = "#0095DD";
+            this.ctx.fill();
+            this.ctx.closePath();
+        },
+        drawBricks: function() {
+            for(let c=0; c<this.brickColumnCount; c++) {
+                for(let r=0; r<this.brickRowCount; r++) {
+                    if(this.bricks[c][r].status == 1) {
+                        let brickX = (c*(this.brickWidth+this.brickPadding))+this.brickOffsetLeft;
+                        let brickY = (r*(this.brickHeight+this.brickPadding))+this.brickOffsetTop;
+                        this.bricks[c][r].x = brickX;
+                        this.bricks[c][r].y = brickY;
+                        this.ctx.beginPath();
+                        this.ctx.rect(brickX, brickY, this.brickWidth, this.brickHeight);
+                        this.ctx.fillStyle = "#DD5500"; // Orange-red
+                        this.ctx.fill();
+                        this.ctx.closePath();
+                    }
+                }
+            }
+        },
+        updateScoreAndLives: function() {
+            document.getElementById('breakoutScore').textContent = this.score;
+            document.getElementById('breakoutLives').textContent = this.lives;
+        },
+
+        drawLoop: function() {
+            this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+            this.drawBricks();
+            this.drawBall();
+            this.drawPaddle();
+            this.collisionDetection();
+            
+            if(this.x + this.dx > this.canvas.width-this.ballRadius || this.x + this.dx < this.ballRadius) {
+                this.dx = -this.dx;
+            }
+            if(this.y + this.dy < this.ballRadius) {
+                this.dy = -this.dy;
+            } else if(this.y + this.dy > this.canvas.height-this.ballRadius) {
+                if(this.x > this.paddleX && this.x < this.paddleX + this.paddleWidth) {
+                    this.dy = -this.dy;
+                    // Add a bit of angle variation based on where it hits the paddle
+                    let deltaX = this.x - (this.paddleX + this.paddleWidth/2);
+                    this.dx = deltaX * 0.15; // Max dx variation factor
+                     if (Math.abs(this.dx) < 1) this.dx = this.dx > 0 ? 1 : -1; // Ensure minimum horizontal speed
+                     if (Math.abs(this.dx) > 4) this.dx = this.dx > 0 ? 4 : -4; // Cap max horizontal speed
+
                 } else {
-                    currentPlayer = currentPlayer === 'X'? 'O' : 'X';
-                    status.textContent = `${currentPlayer}'s turn`;
+                    this.lives--;
+                    this.updateScoreAndLives();
+                    if(!this.lives) {
+                        alert("游戏结束!");
+                        // document.location.reload(); // Or call start()
+                        this.start(); // Restart
+                        return; // Stop this loop
+                    } else {
+                        this.x = this.canvas.width/2;
+                        this.y = this.canvas.height-30;
+                        this.dx = 2;
+                        this.dy = -2;
+                        this.paddleX = (this.canvas.width-this.paddleWidth)/2;
+                    }
                 }
             }
-        }
-
-        function checkWin(player) {
-            for (const combination of winningCombinations) {
-                const [a, b, c] = combination;
-                if (gameBoard[a] === player && gameBoard[b] === player && gameBoard[c] === player) {
-                    return true;
-                }
+            
+            if(this.rightPressed && this.paddleX < this.canvas.width-this.paddleWidth) {
+                this.paddleX += 7;
             }
-            return false;
+            else if(this.leftPressed && this.paddleX > 0) {
+                this.paddleX -= 7;
+            }
+            
+            this.x += this.dx;
+            this.y += this.dy;
+            this.animationFrameId = requestAnimationFrame(this.drawLoop.bind(this));
         }
+    };
 
-        function isBoardFull() {
-            return gameBoard.every(cell => cell!== '');
-        }
+    // --- 初始化所有游戏 ---
+    window.onload = function() {
+        snakeGame.init();
+        game2048.init(); // will also call start
+        breakoutGame.init();
+        
+        // Ensure the first tab's game is ready (snake by default)
+        // Snake doesn't auto-start; user clicks button.
+        // 2048 auto-starts its board.
+        // Breakout doesn't auto-start; user clicks button.
+    };
 
-        function isGameOver() {
-            return checkWin('X') || checkWin('O') || isBoardFull();
-        }
+</script>
 
-        function resetGame() {
-            currentPlayer = 'X';
-            gameBoard = ['', '', '', '', '', '', '', '', ''];
-            status.textContent = `${currentPlayer}'s turn`;
-            const cells = document.querySelectorAll('.cell');
-            cells.forEach(cell => {
-                cell.textContent = '';
-            });
-        }
-
-        createBoard();
-        status.textContent = `${currentPlayer}'s turn`;
-        resetButton.addEventListener('click', resetGame);
-    </script>
 </body>
-
-</html>    
+</html>
