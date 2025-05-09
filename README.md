@@ -12,7 +12,7 @@
 
 直接通过以下链接在线游玩：
 
-➡️ **[点此在线游玩 (Play Online Here)](ttps://yangjinshuai.github.io/fangkuai/)** ⬅️
+➡️ **[点此在线游玩 (Play Online Here)](https://yangjinshuai.github.io/fangkuai/)** ⬅️
 
 
 
